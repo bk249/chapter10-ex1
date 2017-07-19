@@ -32,23 +32,43 @@ switch ($action) {
         $due_date_s = filter_input(INPUT_POST, 'due_date');
 
         // make sure the user enters both dates
-
+        if (empty($invoice_date_s) || empty($due_date_s)) {
+            $message = 'Please enter both dates.';
+            break;
+        }
         // convert date strings to DateTime objects
         // and use a try/catch to make sure the dates are valid
-
+        try {
+            $invoice_date_o = new DateTime($invoice_date_s);
+            $due_date_o = new DateTime($due_date_s);
+        } catch (Exception $e) {
+            $message = 'Please put both dates in a valid format.';
+            break;
+        }
         // make sure the due date is after the invoice date
-
+        if ($due_date_o < $invoice_date_o) {
+            $message = 'The due date should come after the invoice date.';
+            break;
+        }
         // format both dates
-        $invoice_date_f = 'not implemented yet';
-        $due_date_f = 'not implemented yet'; 
+        $format_string = 'F j, Y';
+        $invoice_date_f = $invoice_date_o->format($format_string); 
+        $due_date_f = $due_date_o->format($format_string);
         
         // get the current date and time and format it
-        $current_date_f = 'not implemented yet';
-        $current_time_f = 'not implemented yet';
+        $current_date_o = new DateTime();
+        $current_date_f = $current_date_o->format($format_string);
+        $current_time_f = $current_date_o->format('g:i:s a');
         
         // get the amount of time between the current date and the due date
-        // and format the due date message
-        $due_date_message = 'not implemented yet';
+        $time_span = $current_date_o->diff($due_date_o);
+        if ($due_date_o < $current_date_o) {
+            $due_date_message = $time_span->format(
+                'This invoice is %y years, %m months, and %d days overdue.');
+        } else {
+            $due_date_message = $time_span->format(
+                'This invoice is due in %y years, %m months, and %d days.');
+        }
 
         break;
 }
